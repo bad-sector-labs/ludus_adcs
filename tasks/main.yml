@@ -118,5 +118,9 @@
     cauthority_common_name: "{{ ludus_adcs_ca_common_name }}"
   when: ludus_adcs_esc6 is true
 
+- name: Set up ESC13
+  ansible.builtin.import_playbook: esc13.yml
+  when: ludus_adcs_esc13 is true
+
 - name: Refresh
   ansible.windows.win_command: gpupdate /force

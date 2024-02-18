@@ -1,0 +1,14 @@
+---
+- name: Create a Windows domain user
+  community.windows.win_domain_user:
+    name: ESC13User
+    firstname: ESC13User
+    lastname: ""
+    password: "ESC13Password"
+    state: present
+    domain_username: "{{ ludus_adcs_domain_username }}"
+    domain_password: "{{ ludus_adcs_domain_password }}"
+    groups:
+    user_cannot_change_password: true
+    password_never_expires: true
+
