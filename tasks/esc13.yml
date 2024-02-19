@@ -3,77 +3,48 @@
   debug:
     msg: "DC: {{ ludus_adcs_dc }} | CA: {{ ludus_adcs_ca_host }}"
 
-- name: Create an ESC13 domain user and Domain Group
+- name: Create an ESC13 domain user
+  win_domain_user:
+    name: "{{ ludus_esc13_user }}"
+    password: "{{ ludus_esc13_password }}"
+    upn: "{{ ludus_esc13_user }}"
+    password_never_expires: yes
+    user_cannot_change_password: yes
+    state: present
+    domain_username: "{{ ludus_adcs_domain_username }}"
+    domain_password: "{{ ludus_adcs_domain_password }}"
+    domain_server: "{{ ludus_adcs_dc }}"
+
+- name: Create an ESC13 domain group
+  win_domain_group:
+    name: "{{ ludus_esc13_group }}"
+    scope: universal
+    state: present
+    domain_username: "{{ ludus_adcs_domain_username }}"
+    domain_password: "{{ ludus_adcs_domain_password }}"
+    domain_server: "{{ ludus_adcs_dc }}"
+
+- name: Copy ESC13 script to remote host
+  win_copy:
+    src: files/esc13.ps1
+    dest: C:\ludus\adcs\esc13.ps1
+
+- name: Run ESC13 script
   win_shell: |
-    $Password = ConvertTo-SecureString -String "{{ ludus_adcs_domain_password }}" -AsPlainText -Force
-    $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList "{{ ludus_adcs_domain_username }}", $Password
-    $AccountPassword = ConvertTo-SecureString -String "ESC13password" -AsPlainText -Force
-    New-ADUser -Name "{{ ludus_esc13_user }}" -SamAccountName "{{ ludus_esc13_user }}" -AccountPassword $AccountPassword -Credential $Credential -Server "{{ ludus_adcs_dc }}" -Enabled $true -CannotChangePassword $true -PasswordNeverExpires $true
-    New-ADGroup -Name "{{ ludus_esc13_group }}" -GroupScope Universal -PassThru -Server "{{ ludus_adcs_dc }}" -Credential $Credential
-  args:
-    executable: powershell.exe
+    C:\ludus\adcs\esc13.ps1 -elevatedUser "{{ ludus_adcs_domain_username }}" -elevatedPassword "{{ ludus_adcs_domain_password }}" -esc13group "{{ ludus_esc13_group }}" -esc13template "{{ ludus_esc13_template }}" -esc13user "{{ ludus_esc13_user }}"
+  become: true
+  become_method: runas
+  vars:
+    ansible_become_user: "{{ ludus_adcs_domain_username }}"
+    ansible_become_password: "{{ ludus_adcs_domain_password }}"
+  register: esc13_output
+
+- name: Output ESC13 script result
+  debug:
+    var: esc13_output
 
 - name: Give the ESC13 group something juicy for the operator to abuse it
   win_shell: |
     whoami
-  args:
-    executable: powershell.exe
-
-- name: Extract the Full Distinguished Name of the ESC13 Group
-  win_shell: |
-    $Password = ConvertTo-SecureString -String "{{ ludus_adcs_domain_password }}" -AsPlainText -Force
-    $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList "{{ ludus_adcs_domain_username }}", $Password
-    (Get-ADGroup -Credential $Credential -Filter {Name -eq '{{ ludus_esc13_group }}'}).DistinguishedName
-  args:
-    executable: powershell.exe
-  register: ludus_esc13_group_dn
-
-- name: Add User to have enrollment rights on the certificate template
-  win_shell: |
-    import-module ADCSTemplate
-    # Grant enrollment rights to the principal on the certificate template
-    Set-ADCSTemplateACL -DisplayName "{{ ludus_esc13_template }}" -Type Allow -Identity "{{ ludus_esc13_user }}" -Enroll
-  args:
-    executable: powershell.exe
-
-# - name: The certificate template has an issuance policy extension
-#   win_shell: |
-#     # Looking for programmatic way to do this
-    
-#   args:
-#     executable: powershell.exe
-
-- name: Extract the OID DN of the ESC13 template
-  win_shell: |
-    $ADRootDSE = Get-ADRootDSE
-    $ConfigurationNC = $ADRootDSE.configurationNamingContext
-    $OIDContainer = "CN=OID,CN=Public Key Services,CN=Services,"+$ConfigurationNC
-    $OIDs = Get-ADObject -Filter * -SearchBase $OIDContainer -Properties DisplayName,Name,msPKI-Cert-Template-OID,msDS-OIDToGroupLink
-    ($OIDS | where {$_.DisplayName -eq 'ESC13' }).DistinguishedName
-  args:
-    executable: powershell.exe
-  register: esc13_dn
-
-- name: Set the Group DN to the msDS-OIDToGroupLink attribute
-  win_shell: |
-    $outputVerify = "{{ esc13_dn }}"
-    $outputVerify
-
-    # Create a DirectoryEntry object for the object
-    $object = New-Object System.DirectoryServices.DirectoryEntry("LDAP://{{ esc13_dn }}")
-
-    # Set the msDS-OIDToGroupLink property
-    $Toset = "{{ ludus_esc13_group_dn }}"
-    $object.Properties["msDS-OIDToGroupLink"].Value = $Toset
-
-    # Commit the changes
-    $object.CommitChanges()
-
-    # Refresh the object
-    $object.RefreshCache()
-
-    # Print all properties of the object
-    $object | select * 
-
   args:
     executable: powershell.exe
