@@ -3,11 +3,13 @@
 An Ansible Role that installs [ADCS](https://learn.microsoft.com/en-us/windows-server/identity/ad-cs/active-directory-certificate-services-overview) on Windows Server and optionally configures [Certified Preowned](https://specterops.io/wp-content/uploads/sites/3/2022/06/Certified_Pre-Owned.pdf) templates.
 
 - Turns the VM assigned the "badsectorlabs.adcs" role into a Certificate Authority
-- Creates certificate templates for ESC1,2,3
-- Configures ATTRIBUTESUBJECTALTNAME2 on CA for ESC6
-- Enables web enrollement for you to ESC8
-- For ESC13, it creates a user(esc13user), group(esc13group), template(ESC13), and Issuance policy(IssuancePolicyForESC13) for you.
+- Optionally, creates certificate templates for ESC1,2,3, and 13
+- Optionally, configures ATTRIBUTESUBJECTALTNAME2 on CA for ESC6
+- Optionally, enables web enrollment for ESC8
+- Optionally, for ESC13, creates a user (`esc13user`), group (`esc13group`), template (`ESC13`), and Issuance policy (`IssuancePolicyForESC13`)
 
+> [!WARNING]
+> This role is not idempotent! Setting a `ludus_adcs_escX` value to `true`, applying the role, then setting it to `false` and applying the role will *NOT* remove the template that is now set to `false`.
 
 ## Requirements
 
@@ -64,6 +66,7 @@ None.
     ludus_adcs_esc3_cra: true
     ludus_adcs_esc4: true
     ludus_adcs_esc6: true
+    ludus_adcs_esc8: true
     ludus_adcs_esc13: true
 ```
 
@@ -86,7 +89,7 @@ ludus:
     roles:
       - badsectorlabs.ludus_adcs
     role_vars:
-      ludus_adcs_esc6: false
+      ludus_adcs_esc6: false # By default ESC1,2,3,4,6,8, and 13 are enabled
 ```
 
 ## License

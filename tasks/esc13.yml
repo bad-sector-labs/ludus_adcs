@@ -5,9 +5,9 @@
 
 - name: Create an ESC13 domain user
   community.windows.win_domain_user:
-    name: "{{ ludus_adcs_adcs_esc13_user }}"
-    password: "{{ ludus_adcs_adcs_esc13_password }}"
-    upn: "{{ ludus_adcs_adcs_esc13_user }}"
+    name: "{{ ludus_adcs_esc13_user }}"
+    password: "{{ ludus_adcs_esc13_password }}"
+    upn: "{{ ludus_adcs_esc13_user }}"
     password_never_expires: true
     user_cannot_change_password: true
     state: present
@@ -17,7 +17,7 @@
 
 - name: Create an ESC13 domain group
   community.windows.win_domain_group:
-    name: "{{ ludus_adcs_adcs_esc13_group }}"
+    name: "{{ ludus_adcs_esc13_group }}"
     scope: universal
     state: present
     domain_username: "{{ ludus_adcs_domain_username }}"
@@ -30,7 +30,7 @@
     dest: C:\ludus\adcs\esc13.ps1
 
 - name: Run ESC13 script
-  win_shell: |
+  ansible.windows.win_shell: |
     C:\ludus\adcs\esc13.ps1 -esc13group '{{ ludus_adcs_esc13_group }}' -esc13templateName '{{ ludus_adcs_esc13_template }}' -esc13user '{{ ludus_adcs_esc13_user }}'
   become: true
   become_method: runas

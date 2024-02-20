@@ -56,7 +56,7 @@ $ConfigNC = $ADRootDSE.configurationNamingContext
 
 # Define the display name and the template
 $IssuanceName = "IssuancePolicyESC13"
-$ESC13Template = "CN=$esc13templateName,CN=Certificate Templates,CN=Public Key Services,CN=Services,CN=Configuration,DC=ludus,DC=domain"
+$ESC13Template = "CN=$esc13templateName,CN=Certificate Templates,CN=Public Key Services,CN=Services,$ConfigNC"
 
 # Generate a new unique OID
 $OID = New-TemplateOID -ConfigNC $ConfigNC
@@ -103,6 +103,7 @@ $ludus_esc13_group_dn
 Set-ADCSTemplateACL -DisplayName $esc13templateName -Type Allow -Identity $esc13user -Enroll
 
 # Get Distinguished Name of the ESC13 OID Issuance Policy we created
+# Thanks to Jonas (https://twitter.com/Jonas_B_K) for helping with this!
 $ADRootDSE = Get-ADRootDSE
 $ConfigurationNC = $ADRootDSE.configurationNamingContext
 $OIDContainer = "CN=OID,CN=Public Key Services,CN=Services,"+$ConfigurationNC
