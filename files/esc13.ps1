@@ -3,7 +3,7 @@ import-module ADCSTemplate
 import-module ActiveDirectory
 
 $esc13group = 'esc13group'
-$esc13template = 'esc13'
+$esc13templateName = 'ESC13'
 $esc13user = 'esc13user'
 
  # Function to generate a random hexadecimal string of a given length
@@ -48,7 +48,7 @@ $ConfigNC = $ADRootDSE.configurationNamingContext
 
 # Define the display name and the template
 $IssuanceName = "IssuancePolicyESC13"
-$ESC13Template = "CN=$esc13template,CN=Certificate Templates,CN=Public Key Services,CN=Services,CN=Configuration,DC=ludus,DC=domain"
+$ESC13Template = "CN=$esc13templateName,CN=Certificate Templates,CN=Public Key Services,CN=Services,CN=Configuration,DC=ludus,DC=domain"
 
 # Generate a new unique OID
 $OID = New-TemplateOID -ConfigNC $ConfigNC
@@ -92,7 +92,7 @@ $ludus_esc13_group_dn = (Get-ADGroup $esc13group).DistinguishedName
 $ludus_esc13_group_dn  
 
 # Grant enrollment rights to the user on the ESC13 template
-Set-ADCSTemplateACL -DisplayName $esc13template -Type Allow -Identity $esc13user -Enroll
+Set-ADCSTemplateACL -DisplayName $esc13templateName -Type Allow -Identity $esc13user -Enroll
 
 # Get Distinguished Name of the ESC13 OID Issuance Policy we created
 $ADRootDSE = Get-ADRootDSE
