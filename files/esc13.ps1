@@ -1,10 +1,18 @@
+param(
+    [Parameter(Mandatory=$true)]
+    [string]$esc13group,
+    
+    [Parameter(Mandatory=$true)]
+    [string]$esc13templateName,
+    
+    [Parameter(Mandatory=$true)]
+    [string]$esc13user
+)
+
+
 # Import modules (just in case)
 import-module ADCSTemplate
 import-module ActiveDirectory
-
-$esc13group = 'esc13group'
-$esc13templateName = 'ESC13'
-$esc13user = 'esc13user'
 
  # Function to generate a random hexadecimal string of a given length
  Function Get-RandomHex {

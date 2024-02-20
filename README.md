@@ -36,10 +36,10 @@ Available variables are listed below, along with default values (see `defaults/m
     ludus_adcs_esc13: true
 
     # Vars for specific ESCs
-    ludus_esc13_user: esc13user
-    ludus_esc13_password: ESC13password
-    ludus_esc13_group: esc13group
-    ludus_esc13_template: ESC13
+    ludus_adcs_esc13_user: esc13user
+    ludus_adcs_esc13_password: ESC13password
+    ludus_adcs_esc13_group: esc13group
+    ludus_adcs_esc13_template: ESC13
 
 ## Dependencies
 
