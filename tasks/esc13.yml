@@ -31,10 +31,13 @@
 
 - name: Run ESC13 script
   win_shell: |
-    C:\ludus\adcs\esc13.ps1 -elevatedUser "{{ ludus_adcs_domain_username }}" -elevatedPassword "{{ ludus_adcs_domain_password }}" -esc13group "{{ ludus_esc13_group }}" -esc13template "{{ ludus_esc13_template }}" -esc13user "{{ ludus_esc13_user }}"
+    C:\ludus\adcs\esc13.ps1
   become: true
   become_method: runas
   vars:
+    ansible_become: true
+    ansible_become_method: runas
+    domain_name: "{{ ludus_adcs_domain }}"
     ansible_become_user: "{{ ludus_adcs_domain_username }}"
     ansible_become_password: "{{ ludus_adcs_domain_password }}"
   register: esc13_output

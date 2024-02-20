@@ -1,13 +1,10 @@
-param(
-    [string]$elevatedUser,
-    [string]$elevatedPassword,
-    [string]$esc13group,
-    [string]$esc13template,
-    [string]$esc13user
-)
 # Import modules (just in case)
 import-module ADCSTemplate
 import-module ActiveDirectory
+
+$esc13group = 'esc13group'
+$esc13template = 'esc13'
+$esc13user = 'esc13user'
 
  # Function to generate a random hexadecimal string of a given length
  Function Get-RandomHex {
@@ -50,7 +47,7 @@ $ADRootDSE = Get-ADRootDSE
 $ConfigNC = $ADRootDSE.configurationNamingContext
 
 # Define the display name and the template
-$DisplayName = "IssuancePolicyForESC13"
+$IssuanceName = "IssuancePolicyESC13"
 $ESC13Template = "CN=$esc13template,CN=Certificate Templates,CN=Public Key Services,CN=Services,CN=Configuration,DC=ludus,DC=domain"
 
 # Generate a new unique OID
@@ -61,8 +58,8 @@ $TemplateOIDPath = "CN=OID,CN=Public Key Services,CN=Services,$ConfigNC"
 
 # Create a new AD object with the generated OID
 $oa = @{
-    'DisplayName' = $DisplayName
-    'Name' = $DisplayName
+    'DisplayName' = $IssuanceName
+    'Name' = $IssuanceName
     'flags' = [System.Int32]'2'
     'msPKI-Cert-Template-OID' = $OID.TemplateOID
  }
@@ -71,7 +68,7 @@ $theresults = New-ADObject -Path $TemplateOIDPath -OtherAttributes $oa -Name $OI
 # Get the new OID object
 $OIDContainer = "CN=OID,CN=Public Key Services,CN=Services,"+$ConfigNC
 $OIDs = Get-ADObject -Filter * -SearchBase $OIDContainer -Properties DisplayName,Name,msPKI-Cert-Template-OID,msDS-OIDToGroupLink
-$newOIDObj = ($OIDS | where {$_.DisplayName -eq $DisplayName })
+$newOIDObj = ($OIDS | where {$_.DisplayName -eq $IssuanceName })
 $newOIDValue = $newOIDObj | select -ExpandProperty msPKI-Cert-Template-OID
 
 # Get the ESC13 template object for updating
@@ -90,13 +87,9 @@ $policies = $policies | ForEach-Object { $_.ToString() }
 # Update the ESC13 template AD object
 Set-ADObject -Identity $adObject.DistinguishedName -Replace @{ 'msPKI-Certificate-Policy' = $policies } 
 
-# Convert password to secure string and create credentials
-$Password = ConvertTo-SecureString -String $elevatedPassword -AsPlainText -Force
-$Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $elevatedUser, $Password
-
 # Get DN of the ESC13 Group
-$ludus_esc13_group_dn = (Get-ADGroup -Credential $Credential -Filter {Name -eq $esc13group}).DistinguishedName
-$ludus_esc13_group_dn
+$ludus_esc13_group_dn = (Get-ADGroup $esc13group).DistinguishedName
+$ludus_esc13_group_dn  
 
 # Grant enrollment rights to the user on the ESC13 template
 Set-ADCSTemplateACL -DisplayName $esc13template -Type Allow -Identity $esc13user -Enroll
@@ -106,7 +99,7 @@ $ADRootDSE = Get-ADRootDSE
 $ConfigurationNC = $ADRootDSE.configurationNamingContext
 $OIDContainer = "CN=OID,CN=Public Key Services,CN=Services,"+$ConfigurationNC
 $OIDs = Get-ADObject -Filter * -SearchBase $OIDContainer -Properties DisplayName,Name,msPKI-Cert-Template-OID,msDS-OIDToGroupLink
-$esc13OID_dn = ($OIDS | where {$_.DisplayName -eq 'finaltest' }).DistinguishedName
+$esc13OID_dn = ($OIDS | where {$_.DisplayName -eq $IssuanceName }).DistinguishedName[0]
 $esc13OID_dn
 
 # Create a DirectoryEntry object for the Issuance Policy OID
