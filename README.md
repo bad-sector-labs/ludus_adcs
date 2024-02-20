@@ -2,12 +2,12 @@
 
 An Ansible Role that installs [ADCS](https://learn.microsoft.com/en-us/windows-server/identity/ad-cs/active-directory-certificate-services-overview) on Windows Server and optionally configures [Certified Preowned](https://specterops.io/wp-content/uploads/sites/3/2022/06/Certified_Pre-Owned.pdf) templates.
 
-```
-- Turns the VM assigned to "badsectorlabs.adcs" role into a Certificate Authority
+- Turns the VM assigned the "badsectorlabs.adcs" role into a Certificate Authority
 - Creates certificate templates for ESC1,2,3
+- Configures ATTRIBUTESUBJECTALTNAME2 on CA for ESC6
 - Enables web enrollement for you to ESC8
 - For ESC13, it creates a user(esc13user), group(esc13group), template(ESC13), and Issuance policy(IssuancePolicyForESC13) for you.
-```
+
 
 ## Requirements
 

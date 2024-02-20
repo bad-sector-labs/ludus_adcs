@@ -1,23 +1,23 @@
 ---
 - name: Display Primary DC and CA host
-  debug:
+  ansible.builtin.debug:
     msg: "DC: {{ ludus_adcs_dc }} | CA: {{ ludus_adcs_ca_host }}"
 
 - name: Create an ESC13 domain user
-  win_domain_user:
-    name: "{{ ludus_adcs_esc13_user }}"
-    password: "{{ ludus_adcs_esc13_password }}"
-    upn: "{{ ludus_adcs_esc13_user }}"
-    password_never_expires: yes
-    user_cannot_change_password: yes
+  community.windows.win_domain_user:
+    name: "{{ ludus_adcs_adcs_esc13_user }}"
+    password: "{{ ludus_adcs_adcs_esc13_password }}"
+    upn: "{{ ludus_adcs_adcs_esc13_user }}"
+    password_never_expires: true
+    user_cannot_change_password: true
     state: present
     domain_username: "{{ ludus_adcs_domain_username }}"
     domain_password: "{{ ludus_adcs_domain_password }}"
     domain_server: "{{ ludus_adcs_dc }}"
 
 - name: Create an ESC13 domain group
-  win_domain_group:
-    name: "{{ ludus_adcs_esc13_group }}"
+  community.windows.win_domain_group:
+    name: "{{ ludus_adcs_adcs_esc13_group }}"
     scope: universal
     state: present
     domain_username: "{{ ludus_adcs_domain_username }}"
@@ -25,7 +25,7 @@
     domain_server: "{{ ludus_adcs_dc }}"
 
 - name: Copy ESC13 script to remote host
-  win_copy:
+  ansible.windows.win_copy:
     src: files/esc13.ps1
     dest: C:\ludus\adcs\esc13.ps1
 
@@ -43,7 +43,7 @@
   register: esc13_output
 
 - name: Output ESC13 script result
-  debug:
+  ansible.builtin.debug:
     var: esc13_output
 
 - name: Give the ESC13 group something juicy for the operator to abuse it
